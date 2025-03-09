@@ -2,7 +2,7 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt",
+    SubTitle = "by veddetsiwt [v3]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -22,53 +22,48 @@ local AutofarmActive = false
 local QuickBuyActive = true
 
 do
------------------------------------------------------------------------------------------ Autofarm
+    ----------------------------------------------------------------------------------------- Autofarm
 
-local AutofarmToggle = Tabs.Autofarm:AddToggle("AutofarmToggle", {Title = "Autofarm Active", Default = false })
-AutofarmToggle:OnChanged(function()
- AutofarmActive = not AutofarmActive
- if Options.AutofarmToggle.Value then
+    local AutofarmToggle = Tabs.Autofarm:AddToggle("AutofarmToggle", {Title = "Autofarm Active", Default = false })
+    AutofarmToggle:OnChanged(function(Value)
+        AutofarmActive = Value
         Fluent:Notify({
-             Title = "Autofarm",
-             Content = "Enabled Autofarm",
-              Duration = 5
-         })
-     else
-         Fluent:Notify({
-             Title = "Autofarm",
-             Content = "Disabled Autofarm",
-             Duration = 5
-         })
-    end
-end)
+            Title = "Autofarm",
+            Content = Value and "Enabled Autofarm" or "Disabled Autofarm",
+            Duration = 5
+        })
+    end)
 
------------------------------------------------------------------------------------------ Buy
+    ----------------------------------------------------------------------------------------- Buy
 
-local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
+    local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
 
-local QuickBuyGunsDropDown = Tabs.QuickBuy:AddDropdown("QuickBuyGunsDropDown", {
-    Title = "Select Gun",
-    Values = {"AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
-    "Mossberg", "P90", "Python", "RPG", "RPK", "Raygun", "Saiga 12", "Sawn Off", "Scar L", "Stagecoach", "Tommy Gun", "USP 45", "Uzi"},
-    Multi = false,
-    Default = 1,
-})
+    if ItemsOnSale then
+        local BuyGunsDropDown = Tabs.Buy:AddDropdown("BuyGunsDropDown", {
+            Title = "Select Gun",
+            Values = {"AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
+            "Mossberg", "P90", "Python", "RPG", "RPK", "Raygun", "Saiga 12", "Sawn Off", "Scar L", "Stagecoach", "Tommy Gun", "USP 45", "Uzi"},
+            Multi = false,
+            Default = 1,
+        })
 
-local QuickBuyToggle = Tabs.Autofarm:AddToggle("QuickBuyToggle", {Title = "Quickbuy", Default = true })
-QuickBuyToggle:OnChanged(function()
-    QuickBuyActive = not QuickBuyActive
-end)
-
-QuickBuyGunsDropDown:OnChanged(function(Value)
-    local Gun = ItemsOnSale:FindFirstChild(Value)
-    if Gun then
-        fireclickdetector(Gun.Button.ClickDetector)
+        BuyGunsDropDown:OnChanged(function(Value)
+            local Gun = ItemsOnSale:FindFirstChild(Value)
+            if Gun and Gun:FindFirstChild("Button") and Gun.Button:FindFirstChild("ClickDetector") then
+                fireclickdetector(Gun.Button.ClickDetector)
+            else
+                Fluent:Notify({
+                    Title = "Error",
+                    Content = "Gun not found or missing ClickDetector.",
+                    Duration = 7
+                })
+            end
+        end)
     else
         Fluent:Notify({
-            Title = "Error finding gun",
-            Content = "Gun not found in the 'ItemsOnSale' folder.",
-             Duration = 7
+            Title = "Error",
+            Content = "'ItemsOnSale' folder not found in Workspace.",
+            Duration = 7
         })
     end
-end)
 end
