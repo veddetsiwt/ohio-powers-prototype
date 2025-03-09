@@ -11,9 +11,10 @@ local Window = Fluent:CreateWindow({
 })
 
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Powers = Window:AddTab({ Title = "Powers", Icon = "wand-sparkles" }),
-    Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "gem" })
+    Main = Window:AddTab({ Title = "Main", Icon = "box" }),
+    Powers = Window:AddTab({ Title = "Powers", Icon = "rocket" }),
+    Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "gem" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
 local Options = Fluent.Options
@@ -21,14 +22,47 @@ local AutofarmActive = false
 
 do
     local AutofarmToggle = Tabs.Autofarm:AddToggle("AutofarmToggle", {Title = "Autofarm Active", Default = false })
-    Toggle:OnChanged(function()
+    AutofarmToggle:OnChanged(function()
         AutofarmActive = not AutofarmActive
         if Options.MyToggle.Value then
             Fluent:Notify({
                 Title = "Autofarm",
-                Content = "Autofarm is now active.",
+                Content = "Enabled Autofarm",
+                Duration = 6
+            })
+        else
+            Fluent:Notify({
+                Title = "Autofarm",
+                Content = "Disabled Autofarm",
                 Duration = 6
             })
         end
     end)
+
+
+    Tabs.Main:AddButton({
+        Title = "Unload GUI",
+        Description = "Very important button",
+        Callback = function()
+            Window:Dialog({
+                Title = "Confirmation",
+                Content = "Are you sure you want to unload the GUI?",
+                Buttons = {
+                    {
+                        Title = "Confirm",
+                        Callback = function()
+                            Window:Destroy()
+                            print("Confirmed the dialog.")
+                        end
+                    },
+                    {
+                        Title = "Cancel",
+                        Callback = function()
+                            print("Cancelled the dialog.")
+                        end
+                    }
+                }
+            })
+        end
+    })
 end
