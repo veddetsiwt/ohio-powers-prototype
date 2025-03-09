@@ -1,9 +1,9 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
-local Player = Players.LocalPlayer
+local Player = game:GetService("Players").LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
-local RootPart = Character:FindFirstChild("HumanoidRootPart")
+local RootPart = Humanoid.RootPart or Character:FindFirstChild("HumanoidRootPart")
 
 if game.GameId ~= 2820580801 then
     Fluent:Notify({
@@ -23,7 +23,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v4]",
+    SubTitle = "by veddetsiwt [v5]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -33,15 +33,15 @@ local Window = Fluent:CreateWindow({
 
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "box" }),
-    Powers = Window:AddTab({ Title = "Powers", Icon = "rocket" }),
+    Powers = Window:AddTab({ Title = "Powers", Icon = "flame" }),
     Buy = Window:AddTab({ Title = "Buy", Icon = "shopping-cart" }),
-    Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "sparkles" }),
+    Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "rocket" }),
     Itemfarm = Window:AddTab({ Title = "Itemfarm", Icon = "gem" }),
 }
 
 local Options = Fluent.Options
 local AutofarmActive = false
-local QuickBuyActive = true
+local ItemfarmActive = false
 
 do
     ----------------------------------------------------------------------------------------- Autofarm
@@ -60,22 +60,24 @@ do
 
     local ItemfarmToggle = Tabs.Itemfarm:AddToggle("ItemfarmToggle", {Title = "Itemfarm Active", Default = false })
     ItemfarmToggle:OnChanged(function(Value)
-        AutofarmActive = Value
+        ItemfarmActive = Value 
         Fluent:Notify({
             Title = "Itemfarm",
             Content = Value and "Enabled Itemfarm" or "Disabled Itemfarm",
             Duration = 5
         })
     end)
+    
 
     ----------------------------------------------------------------------------------------- Buy
 
     local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
+    local SelectedGun
 
     if ItemsOnSale then
         local QuickBuyGunsDropDown = Tabs.Buy:AddDropdown("QuickBuyGunsDropDown", {
             Title = "Select Gun",
-            Values = {"None", "AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
+            Values = {"AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
             "Mossberg", "P90", "Python", "RPG", "RPK", "Raygun", "Saiga 12", "Sawn Off", "Scar L", "Stagecoach", "Tommy Gun", "USP 45", "Uzi"},
             Multi = false,
             Default = 1,
@@ -84,8 +86,7 @@ do
         QuickBuyGunsDropDown:OnChanged(function(Value)
             local Gun = ItemsOnSale:FindFirstChild(Value)
             if Gun and Gun:FindFirstChild("Button") and Gun.Button:FindFirstChild("ClickDetector") then
-                Gun.Button:PivotTo(RootPart.CFrame)
-                fireclickdetector(Gun.Button.ClickDetector)
+                SelectedGun = Gun
             else
                 Fluent:Notify({
                     Title = "Error",
@@ -93,9 +94,24 @@ do
                     Duration = 8
                 })
             end
-
-            Dropdown:SetValue("None")
         end)
+
+        PurchaseButton = Tabs.Buy:AddButton({
+            Title = "Purchase",
+            Description = "Purchase the item selected in the dropdown.",
+            Callback = function()
+                if SelectedGun and SelectedGun:FindFirstChild("Button") and SelectedGun.Button:FindFirstChild("ClickDetector") then
+                    SelectedGun.Button:PivotTo(RootPart.CFrame * CFrame.new(0, 0, -2)) -- Slight offset to avoid overlap
+                    fireclickdetector(SelectedGun.Button.ClickDetector)
+                else
+                    Fluent:Notify({
+                        Title = "Error",
+                        Content = "No valid gun selected for purchase.",
+                        Duration = 8
+                    })
+                end
+            end
+        })              
     else
         Fluent:Notify({
             Title = "Error",
