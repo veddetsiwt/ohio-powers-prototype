@@ -1,0 +1,34 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Ohio Powers"
+    SubTitle = "by veddetsiwt",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Powers = Window:AddTab({ Title = "Powers", Icon = "wand-sparkles" }),
+    Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "gem" })
+}
+
+local Options = Fluent.Options
+local AutofarmActive = false
+
+do
+    local AutofarmToggle = Tabs.Autofarm:AddToggle("AutofarmToggle", {Title = "Autofarm Active", Default = false })
+    Toggle:OnChanged(function()
+        AutofarmActive = not AutofarmActive
+        if Options.MyToggle.Value then
+            Fluent:Notify({
+                Title = "Autofarm",
+                Content = "Autofarm is now active.",
+                Duration = 6
+            })
+        end
+    end)
+end
