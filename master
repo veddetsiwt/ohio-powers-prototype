@@ -1,8 +1,29 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:FindFirstChild("HumanoidRootPart")
+
+if game.GameId ~= 2820580801 then
+    Fluent:Notify({
+        Title = "Error",
+        Content = "This script can only run in Ohio. GameId is ".. game.GameId,
+        Duration = 8
+    })
+    return
+elseif not Humanoid or not RootPart then
+    Fluent:Notify({
+        Title = "Error",
+        Content = "Your character is missing essential parts.",
+        Duration = 8
+    })
+    return
+end
+
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v3]",
+    SubTitle = "by veddetsiwt [v4]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -14,7 +35,8 @@ local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "box" }),
     Powers = Window:AddTab({ Title = "Powers", Icon = "rocket" }),
     Buy = Window:AddTab({ Title = "Buy", Icon = "shopping-cart" }),
-    Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "gem" }),
+    Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "sparkles" }),
+    Itemfarm = Window:AddTab({ Title = "Itemfarm", Icon = "gem" }),
 }
 
 local Options = Fluent.Options
@@ -34,36 +56,51 @@ do
         })
     end)
 
+    ----------------------------------------------------------------------------------------- Itemfarm
+
+    local ItemfarmToggle = Tabs.Itemfarm:AddToggle("ItemfarmToggle", {Title = "Itemfarm Active", Default = false })
+    ItemfarmToggle:OnChanged(function(Value)
+        AutofarmActive = Value
+        Fluent:Notify({
+            Title = "Itemfarm",
+            Content = Value and "Enabled Itemfarm" or "Disabled Itemfarm",
+            Duration = 5
+        })
+    end)
+
     ----------------------------------------------------------------------------------------- Buy
 
     local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
 
     if ItemsOnSale then
-        local BuyGunsDropDown = Tabs.Buy:AddDropdown("BuyGunsDropDown", {
+        local QuickBuyGunsDropDown = Tabs.Buy:AddDropdown("QuickBuyGunsDropDown", {
             Title = "Select Gun",
-            Values = {"AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
+            Values = {"None", "AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
             "Mossberg", "P90", "Python", "RPG", "RPK", "Raygun", "Saiga 12", "Sawn Off", "Scar L", "Stagecoach", "Tommy Gun", "USP 45", "Uzi"},
             Multi = false,
             Default = 1,
         })
 
-        BuyGunsDropDown:OnChanged(function(Value)
+        QuickBuyGunsDropDown:OnChanged(function(Value)
             local Gun = ItemsOnSale:FindFirstChild(Value)
             if Gun and Gun:FindFirstChild("Button") and Gun.Button:FindFirstChild("ClickDetector") then
+                Gun.Button:PivotTo(RootPart.CFrame)
                 fireclickdetector(Gun.Button.ClickDetector)
             else
                 Fluent:Notify({
                     Title = "Error",
                     Content = "Gun not found or missing ClickDetector.",
-                    Duration = 7
+                    Duration = 8
                 })
             end
+
+            Dropdown:SetValue("None")
         end)
     else
         Fluent:Notify({
             Title = "Error",
             Content = "'ItemsOnSale' folder not found in Workspace.",
-            Duration = 7
+            Duration = 8
         })
     end
 end
