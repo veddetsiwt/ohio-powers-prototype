@@ -13,56 +13,62 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "box" }),
     Powers = Window:AddTab({ Title = "Powers", Icon = "rocket" }),
+    Buy = Window:AddTab({ Title = "Buy", Icon = "shopping-cart" }),
     Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "gem" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
 local Options = Fluent.Options
 local AutofarmActive = false
+local QuickBuyActive = true
 
 do
-    local AutofarmToggle = Tabs.Autofarm:AddToggle("AutofarmToggle", {Title = "Autofarm Active", Default = false })
-    AutofarmToggle:OnChanged(function()
-        AutofarmActive = not AutofarmActive
-        if Options.MyToggle.Value then
-            Fluent:Notify({
-                Title = "Autofarm",
-                Content = "Enabled Autofarm",
-                Duration = 6
-            })
-        else
-            Fluent:Notify({
-                Title = "Autofarm",
-                Content = "Disabled Autofarm",
-                Duration = 6
-            })
-        end
-    end)
+----------------------------------------------------------------------------------------- Autofarm
 
+local AutofarmToggle = Tabs.Autofarm:AddToggle("AutofarmToggle", {Title = "Autofarm Active", Default = false })
+AutofarmToggle:OnChanged(function()
+ AutofarmActive = not AutofarmActive
+ if Options.AutofarmToggle.Value then
+        Fluent:Notify({
+             Title = "Autofarm",
+             Content = "Enabled Autofarm",
+              Duration = 5
+         })
+     else
+         Fluent:Notify({
+             Title = "Autofarm",
+             Content = "Disabled Autofarm",
+             Duration = 5
+         })
+    end
+end)
 
-    Tabs.Main:AddButton({
-        Title = "Unload GUI",
-        Description = "Very important button",
-        Callback = function()
-            Window:Dialog({
-                Title = "Confirmation",
-                Content = "Are you sure you want to unload the GUI?",
-                Buttons = {
-                    {
-                        Title = "Confirm",
-                        Callback = function()
-                            Window:Destroy()
-                            print("Confirmed the dialog.")
-                        end
-                    },
-                    {
-                        Title = "Cancel",
-                        Callback = function()
-                            print("Cancelled the dialog.")
-                        end
-                    }
-                }
-            })
-        end
-    })
+----------------------------------------------------------------------------------------- Buy
+
+local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
+
+local QuickBuyGunsDropDown = Tabs.QuickBuy:AddDropdown("QuickBuyGunsDropDown", {
+    Title = "Select Gun",
+    Values = {"AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
+    "Mossberg", "P90", "Python", "RPG", "RPK", "Raygun", "Saiga 12", "Sawn Off", "Scar L", "Stagecoach", "Tommy Gun", "USP 45", "Uzi"},
+    Multi = false,
+    Default = 1,
+})
+
+local QuickBuyToggle = Tabs.Autofarm:AddToggle("QuickBuyToggle", {Title = "Quickbuy", Default = true })
+QuickBuyToggle:OnChanged(function()
+    QuickBuyActive = not QuickBuyActive
+end)
+
+QuickBuyGunsDropDown:OnChanged(function(Value)
+    local Gun = ItemsOnSale:FindFirstChild(Value)
+    if Gun then
+        fireclickdetector(Gun.Button.ClickDetector)
+    else
+        Fluent:Notify({
+            Title = "Error finding gun",
+            Content = "Gun not found in the 'ItemsOnSale' folder.",
+             Duration = 7
+        })
+    end
+end)
 end
