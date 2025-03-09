@@ -23,7 +23,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v6]",
+    SubTitle = "by veddetsiwt [v7]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -44,7 +44,77 @@ local AutofarmActive = false
 local ItemfarmActive = false
 
 do
+    ----------------------------------------------------------------------------------------- Main
+
+    Tabs.Main:AddParagraph({
+        Title = "Work In Progress",
+        Content = "This tab is a work in progress; more will be added soon."
+    })
+
+    ----------------------------------------------------------------------------------------- Powers
+
+    Tabs.Powers:AddParagraph({
+        Title = "Work In Progress",
+        Content = "This tab is a work in progress; more will be added soon."
+    })
+
+    ----------------------------------------------------------------------------------------- Buy
+
+    local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
+    local SelectedGun
+
+    if ItemsOnSale then
+        local QuickBuyGunsDropDown = Tabs.Buy:AddDropdown("QuickBuyGunsDropDown", {
+            Title = "Select Gun",
+            Values = {"AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M1 Garand", "M249 SAW", "M4A1", "MP7", "Minigun", 
+            "Mossberg", "P90", "Python", "RPG", "RPK", "Raygun", "Saiga 12", "Sawn Off", "Scar L", "Stagecoach", "Tommy Gun", "USP 45", "Uzi"},
+            Multi = false,
+            Default = 1,
+        })
+
+        QuickBuyGunsDropDown:OnChanged(function(Value)
+            local Gun = ItemsOnSale:FindFirstChild(Value)
+            if Gun and Gun:FindFirstChild("Button") and Gun.Button:FindFirstChild("ClickDetector") then
+                SelectedGun = Gun
+            else
+                Fluent:Notify({
+                    Title = "Error",
+                    Content = "Gun not found or missing ClickDetector.",
+                    Duration = 8
+                })
+            end
+        end)
+
+        PurchaseButton = Tabs.Buy:AddButton({
+            Title = "Purchase",
+            Description = "Purchase the item selected in the dropdown.",
+            Callback = function()
+                if SelectedGun and SelectedGun:FindFirstChild("Button") and SelectedGun.Button:FindFirstChild("ClickDetector") then
+                    SelectedGun:PivotTo(RootPart.CFrame * CFrame.new(0, -2, 0))
+                    fireclickdetector(SelectedGun.Button.ClickDetector)
+                else
+                    Fluent:Notify({
+                        Title = "Error",
+                        Content = "No valid gun selected for purchase.",
+                        Duration = 8
+                    })
+                end
+            end
+        })              
+    else
+        Fluent:Notify({
+            Title = "Error",
+            Content = "'ItemsOnSale' folder not found in Workspace.",
+            Duration = 8
+        })
+    end
+
     ----------------------------------------------------------------------------------------- Autofarm
+
+    Tabs.Autofarm:AddParagraph({
+        Title = "Work In Progress",
+        Content = "This tab is a work in progress; more will be added soon."
+    })
 
     local AutofarmToggle = Tabs.Autofarm:AddToggle("AutofarmToggle", {Title = "Autofarm Active", Default = false })
     AutofarmToggle:OnChanged(function(Value)
@@ -69,7 +139,7 @@ if ItemPickup then
         for _, item in ipairs(ItemPickup:GetChildren()) do
             local itemName = item:GetAttribute("itemName")
             if itemName and ToggledItems[itemName] then
-                local prompt = item:FindFirstChildWhichIsA("ProximityPrompt")
+                local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
                 if prompt then
                     fireproximityprompt(prompt)
                 end
@@ -117,56 +187,4 @@ if ItemPickup then
         })
     end)
 end
-
-    ----------------------------------------------------------------------------------------- Buy
-
-    local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
-    local SelectedGun
-
-    if ItemsOnSale then
-        local QuickBuyGunsDropDown = Tabs.Buy:AddDropdown("QuickBuyGunsDropDown", {
-            Title = "Select Gun",
-            Values = {"AK-47", "AR-15", "AUG", "Acid Gun", "Barrett M107", "Deagle", "Double Barrel", "Dragunov", "Glock", "Glock 18", "M1911", "M249 SAW", "M4A1", "MP7", "Minigun", 
-            "Mossberg", "P90", "Python", "RPG", "RPK", "Raygun", "Saiga 12", "Sawn Off", "Scar L", "Stagecoach", "Tommy Gun", "USP 45", "Uzi"},
-            Multi = false,
-            Default = 1,
-        })
-
-        QuickBuyGunsDropDown:OnChanged(function(Value)
-            local Gun = ItemsOnSale:FindFirstChild(Value)
-            if Gun and Gun:FindFirstChild("Button") and Gun.Button:FindFirstChild("ClickDetector") then
-                SelectedGun = Gun
-            else
-                Fluent:Notify({
-                    Title = "Error",
-                    Content = "Gun not found or missing ClickDetector.",
-                    Duration = 8
-                })
-            end
-        end)
-
-        PurchaseButton = Tabs.Buy:AddButton({
-            Title = "Purchase",
-            Description = "Purchase the item selected in the dropdown.",
-            Callback = function()
-                if SelectedGun and SelectedGun:FindFirstChild("Button") and SelectedGun.Button:FindFirstChild("ClickDetector") then
-                    SelectedGun:PivotTo(RootPart.CFrame * CFrame.new(0, 0, -2))
-                    fireclickdetector(SelectedGun.Button.ClickDetector)
-                else
-                    Fluent:Notify({
-                        Title = "Error",
-                        Content = "No valid gun selected for purchase.",
-                        Duration = 8
-                    })
-                end
-            end
-        })              
-    else
-        Fluent:Notify({
-            Title = "Error",
-            Content = "'ItemsOnSale' folder not found in Workspace.",
-            Duration = 8
-        })
-    end
 end
-
