@@ -23,7 +23,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v5]",
+    SubTitle = "by veddetsiwt [v6]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -56,18 +56,67 @@ do
         })
     end)
 
-    ----------------------------------------------------------------------------------------- Itemfarm
+  ----------------------------------------------------------------------------------------- Itemfarm
+
+local ItemPickup = game.Workspace:FindFirstChild("Game") and game.Workspace.Game:FindFirstChild("Entities") and game.Workspace.Game.Entities:FindFirstChild("ItemPickup")
+local ToggledItems = {}
+local ItemfarmConnection
+
+if ItemPickup then
+    local function SearchForItems()
+        if not ItemfarmActive or not next(ToggledItems) then return end
+
+        for _, item in ipairs(ItemPickup:GetChildren()) do
+            local itemName = item:GetAttribute("itemName")
+            if itemName and ToggledItems[itemName] then
+                local prompt = item:FindFirstChildWhichIsA("ProximityPrompt")
+                if prompt then
+                    fireproximityprompt(prompt)
+                end
+            end
+        end
+    end    
 
     local ItemfarmToggle = Tabs.Itemfarm:AddToggle("ItemfarmToggle", {Title = "Itemfarm Active", Default = false })
+
+    local ItemfarmDropdown = Tabs.Itemfarm:AddDropdown("ItemfarmDropdown", {
+        Title = "Select Items",
+        Description = "Items to farm (you can select multiple).",
+        Values = {"Money Printer", "Gold Bar", "Component Box"},
+        Multi = true,
+        Default = {"Money Printer"},
+    })
+
+    ItemfarmDropdown:OnChanged(function(SelectedItems)
+        ToggledItems = {}
+        for _, item in ipairs(SelectedItems) do
+            ToggledItems[item] = true
+        end
+    end)
+
     ItemfarmToggle:OnChanged(function(Value)
         ItemfarmActive = Value 
+
+        if Value then
+            SearchForItems()
+
+            if not ItemfarmConnection then
+                ItemfarmConnection = ItemPickup.ChildAdded:Connect(SearchForItems)
+            end
+        else
+            if ItemfarmConnection then
+                ItemfarmConnection:Disconnect()
+                ItemfarmConnection = nil
+            end
+        end
+
         Fluent:Notify({
             Title = "Itemfarm",
             Content = Value and "Enabled Itemfarm" or "Disabled Itemfarm",
             Duration = 5
         })
     end)
-    
+end
 
     ----------------------------------------------------------------------------------------- Buy
 
@@ -101,7 +150,7 @@ do
             Description = "Purchase the item selected in the dropdown.",
             Callback = function()
                 if SelectedGun and SelectedGun:FindFirstChild("Button") and SelectedGun.Button:FindFirstChild("ClickDetector") then
-                    SelectedGun.Button:PivotTo(RootPart.CFrame * CFrame.new(0, 0, -2)) -- Slight offset to avoid overlap
+                    SelectedGun:PivotTo(RootPart.CFrame * CFrame.new(0, 0, -2))
                     fireclickdetector(SelectedGun.Button.ClickDetector)
                 else
                     Fluent:Notify({
@@ -120,3 +169,4 @@ do
         })
     end
 end
+
