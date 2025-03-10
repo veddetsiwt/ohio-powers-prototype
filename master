@@ -25,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v8]",
+    SubTitle = "by veddetsiwt [v9]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -45,7 +45,6 @@ local Tabs = {
 
 local Options = Fluent.Options
 local AutofarmActive = false
-local ItemfarmActive = false
 
 do
     -----[[ Main ]]-----
@@ -76,6 +75,24 @@ do
             loadstring(game:HttpGet("https://raw.githubusercontent.com/veddetsiwt/ohio-loopbring-v2/refs/heads/main/source"))()
         end
     })
+
+    local WalkSpeedSlider = Tabs.Powers:AddSlider("WalkSpeedSlider", {
+        Title = "Speed",
+        Description = "Change your character's walkspeed.",
+        Default = 16,
+        Min = 0,
+        Max = 100,
+        Rounding = 16,
+        Callback = function(Value)
+            Humanoid.WalkSpeed = Value
+        end
+    })
+
+    local TogglePlrHighlight = Tabs.Powers:AddToggle("TogglePlrHighlight", {Title = "Highlight Players", Default = false })
+
+    Toggle:OnChanged(function()
+        print("Toggle changed:", Options.TogglePlrHighlight.Value)
+    end)
 
     -----[[ Buy ]]-----
 
@@ -130,7 +147,7 @@ do
 
     -----[[ Money ]]-----
 
-    Tabs.Autofarm:AddParagraph({
+    Tabs.Money:AddParagraph({
         Title = "Work In Progress",
         Content = "This tab is a work in progress; more will be added soon."
     })
@@ -154,72 +171,80 @@ do
 
   -----[[ Itemfarm ]]-----
 
-local ItemPickup = game.Workspace:FindFirstChild("Game") and game.Workspace.Game:FindFirstChild("Entities") and game.Workspace.Game.Entities:FindFirstChild("ItemPickup")
+local ItemPickup = game.Workspace:FindFirstChild("Game") 
+and game.Workspace.Game:FindFirstChild("Entities") 
+and game.Workspace.Game.Entities:FindFirstChild("ItemPickup")
+
 local ToggledItems = {}
+local ItemfarmActive = false
 local ItemfarmConnection
 
 if ItemPickup then
-local function SearchForItems()
-    if not ItemfarmActive or not next(ToggledItems) then return end
-
-    for _, item in ipairs(ItemPickup:GetDescendants()) do
-        if item:IsA("ProximityPrompt") then
-            local model = item:FindFirstAncestorOfClass("Model")
-            local type = model and model:GetAttribute("itemName")
-
-            if model and type and ToggledItems[type] then
-                print("Farming item: " .. type)
-                if Character then
-                    Character:PivotTo(model.CFrame)
-                    fireproximityprompt(item)
+    local function SearchForItems()
+        if not ItemfarmActive or not next(ToggledItems) then return end
+    
+        for _, item in ipairs(ItemPickup:GetDescendants()) do
+            if item:IsA("ProximityPrompt") then
+                local model = item:FindFirstAncestorOfClass("Model")
+                local itemType = model and model:GetAttribute("itemName")
+    
+                if model and itemType and ToggledItems[itemType] then
+                    print("Farming item: " .. itemType)
+    
+                    local modelCFrame = model.PrimaryPart and model.PrimaryPart.CFrame
+                    if modelCFrame then
+                        RootPart.CFrame = modelCFrame
+                        fireproximityprompt(item)
+                    else
+                        print("Warning: Model missing PrimaryPart, can't move to item.")
+                    end
                 end
             end
         end
-    end
-end    
-
-local ItemfarmToggle = Tabs.Itemfarm:AddToggle("ItemfarmToggle", {Title = "Itemfarm Active", Default = false})
-
-local ItemfarmDropdown = Tabs.Itemfarm:AddDropdown("ItemfarmDropdown", {
-    Title = "Select Items",
-    Description = "Items to farm (you can select multiple).",
-    Values = {"Money Printer", "Gold Bar", "Component Box"},
-    Multi = true,
-    Default = {"Money Printer"},
-})
-
-ItemfarmDropdown:OnChanged(function(SelectedItems)
-    ToggledItems = {}
-    for _, item in ipairs(SelectedItems) do
-        ToggledItems[item] = true
-    end
-end)
-
-ItemfarmToggle:OnChanged(function(Value)
-    ItemfarmActive = Value
-
-    if Value then
-        print("Itemfarm enabled.")
-        SearchForItems()
-
-        if not ItemfarmConnection then
-            ItemfarmConnection = ItemPickup.ChildAdded:Connect(SearchForItems)
-        end
-    else
-        print("Itemfarm disabled.")
-        
-        if ItemfarmConnection then
-            ItemfarmConnection:Disconnect()
-            ItemfarmConnection = nil
-        end
-    end
-
-    Fluent:Notify({
-        Title = "Itemfarm",
-        Content = Value and "Enabled Itemfarm" or "Disabled Itemfarm",
-        Duration = 5
+    end    
+    
+    local ItemfarmToggle = Tabs.Itemfarm:AddToggle("ItemfarmToggle", {Title = "Itemfarm Active", Default = false})
+    
+    local ItemfarmDropdown = Tabs.Itemfarm:AddDropdown("ItemfarmDropdown", {
+        Title = "Select Items",
+        Description = "Items to farm (you can select multiple).",
+        Values = {"Money Printer", "Gold Bar", "Component Box"},
+        Multi = true,
+        Default = {"Money Printer"},
     })
-end)
+    
+    ItemfarmDropdown:OnChanged(function(SelectedItems)
+        ToggledItems = {}
+        for _, item in ipairs(SelectedItems) do
+            ToggledItems[item] = true
+        end
+    end)
+    
+    ItemfarmToggle:OnChanged(function(Value)
+        ItemfarmActive = Value
+    
+        if Value then
+            print("Itemfarm enabled.")
+            SearchForItems()
+    
+            if not ItemfarmConnection then
+                ItemfarmConnection = ItemPickup.ChildAdded:Connect(SearchForItems)
+            end
+        else
+            print("Itemfarm disabled.")
+            
+            if ItemfarmConnection then
+                ItemfarmConnection:Disconnect()
+                ItemfarmConnection = nil
+            end
+        end
+    
+        Fluent:Notify({
+            Title = "Itemfarm",
+            Content = Value and "Enabled Itemfarm" or "Disabled Itemfarm",
+            Duration = 5
+        })
+    end)
 end
 
 ----------------------------------------------------------------------------------------- Other
