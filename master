@@ -8,9 +8,11 @@ local RootPart = Humanoid.RootPart or Character:FindFirstChild("HumanoidRootPart
 if game.GameId ~= 2820580801 then
     Fluent:Notify({
         Title = "Error",
-        Content = "This script can only run in Ohio. GameId is ".. game.GameId,
+        Content = "This script can only run in Ohio. Teleporting to Ohio...",
         Duration = 8
     })
+
+    game:GetService("TeleportService"):Teleport(2820580801, Player)
     return
 elseif not Humanoid or not RootPart then
     Fluent:Notify({
@@ -23,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v7]",
+    SubTitle = "by veddetsiwt [v8]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -35,8 +37,10 @@ local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "box" }),
     Powers = Window:AddTab({ Title = "Powers", Icon = "flame" }),
     Buy = Window:AddTab({ Title = "Buy", Icon = "shopping-cart" }),
+    Money = Window:AddTab({ Title = "Money", Icon = "wallet" }),
     Autofarm = Window:AddTab({ Title = "Autofarm", Icon = "rocket" }),
     Itemfarm = Window:AddTab({ Title = "Itemfarm", Icon = "gem" }),
+    Other = Window:AddTab({ Title = "Other", Icon = "wrench" }),
 }
 
 local Options = Fluent.Options
@@ -44,21 +48,36 @@ local AutofarmActive = false
 local ItemfarmActive = false
 
 do
-    ----------------------------------------------------------------------------------------- Main
+    -----[[ Main ]]-----
 
     Tabs.Main:AddParagraph({
         Title = "Work In Progress",
         Content = "This tab is a work in progress; more will be added soon."
     })
 
-    ----------------------------------------------------------------------------------------- Powers
+    local FullChatToggle = Tabs.Main:AddToggle("FullChatToggle", {Title = "Show Full Chat", Default = true })
+    local TCService = game:GetService("TextChatService")
+
+    FullChatToggle:OnChanged(function()
+        TCService.ChatWindowConfiguration.Enabled = Options.FullChatToggle.Value
+    end)
+
+    -----[[ Powers ]]-----
 
     Tabs.Powers:AddParagraph({
         Title = "Work In Progress",
         Content = "This tab is a work in progress; more will be added soon."
     })
 
-    ----------------------------------------------------------------------------------------- Buy
+    Tabs.Powers:AddButton({
+        Title = "LoopBring v2",
+        Description = "Teleports you and everyone else under the map and places them in a circle pattern. [ohio-loopbring-v2]",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/veddetsiwt/ohio-loopbring-v2/refs/heads/main/source"))()
+        end
+    })
+
+    -----[[ Buy ]]-----
 
     local ItemsOnSale = game.Workspace:FindFirstChild("ItemsOnSale")
     local SelectedGun
@@ -109,7 +128,14 @@ do
         })
     end
 
-    ----------------------------------------------------------------------------------------- Autofarm
+    -----[[ Money ]]-----
+
+    Tabs.Autofarm:AddParagraph({
+        Title = "Work In Progress",
+        Content = "This tab is a work in progress; more will be added soon."
+    })
+
+    -----[[ Autofarm ]]-----
 
     Tabs.Autofarm:AddParagraph({
         Title = "Work In Progress",
@@ -126,65 +152,118 @@ do
         })
     end)
 
-  ----------------------------------------------------------------------------------------- Itemfarm
+  -----[[ Itemfarm ]]-----
 
 local ItemPickup = game.Workspace:FindFirstChild("Game") and game.Workspace.Game:FindFirstChild("Entities") and game.Workspace.Game.Entities:FindFirstChild("ItemPickup")
 local ToggledItems = {}
 local ItemfarmConnection
 
 if ItemPickup then
-    local function SearchForItems()
-        if not ItemfarmActive or not next(ToggledItems) then return end
+local function SearchForItems()
+    if not ItemfarmActive or not next(ToggledItems) then return end
 
-        for _, item in ipairs(ItemPickup:GetChildren()) do
-            local itemName = item:GetAttribute("itemName")
-            if itemName and ToggledItems[itemName] then
-                local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
-                if prompt then
-                    fireproximityprompt(prompt)
+    for _, item in ipairs(ItemPickup:GetDescendants()) do
+        if item:IsA("ProximityPrompt") then
+            local model = item:FindFirstAncestorOfClass("Model")
+            local type = model and model:GetAttribute("itemName")
+
+            if model and type and ToggledItems[type] then
+                print("Farming item: " .. type)
+                if Character then
+                    Character:PivotTo(model.CFrame)
+                    fireproximityprompt(item)
                 end
             end
         end
-    end    
+    end
+end    
 
-    local ItemfarmToggle = Tabs.Itemfarm:AddToggle("ItemfarmToggle", {Title = "Itemfarm Active", Default = false })
+local ItemfarmToggle = Tabs.Itemfarm:AddToggle("ItemfarmToggle", {Title = "Itemfarm Active", Default = false})
 
-    local ItemfarmDropdown = Tabs.Itemfarm:AddDropdown("ItemfarmDropdown", {
-        Title = "Select Items",
-        Description = "Items to farm (you can select multiple).",
-        Values = {"Money Printer", "Gold Bar", "Component Box"},
-        Multi = true,
-        Default = {"Money Printer"},
+local ItemfarmDropdown = Tabs.Itemfarm:AddDropdown("ItemfarmDropdown", {
+    Title = "Select Items",
+    Description = "Items to farm (you can select multiple).",
+    Values = {"Money Printer", "Gold Bar", "Component Box"},
+    Multi = true,
+    Default = {"Money Printer"},
+})
+
+ItemfarmDropdown:OnChanged(function(SelectedItems)
+    ToggledItems = {}
+    for _, item in ipairs(SelectedItems) do
+        ToggledItems[item] = true
+    end
+end)
+
+ItemfarmToggle:OnChanged(function(Value)
+    ItemfarmActive = Value
+
+    if Value then
+        print("Itemfarm enabled.")
+        SearchForItems()
+
+        if not ItemfarmConnection then
+            ItemfarmConnection = ItemPickup.ChildAdded:Connect(SearchForItems)
+        end
+    else
+        print("Itemfarm disabled.")
+        
+        if ItemfarmConnection then
+            ItemfarmConnection:Disconnect()
+            ItemfarmConnection = nil
+        end
+    end
+
+    Fluent:Notify({
+        Title = "Itemfarm",
+        Content = Value and "Enabled Itemfarm" or "Disabled Itemfarm",
+        Duration = 5
     })
+end)
+end
 
-    ItemfarmDropdown:OnChanged(function(SelectedItems)
-        ToggledItems = {}
-        for _, item in ipairs(SelectedItems) do
-            ToggledItems[item] = true
-        end
-    end)
+----------------------------------------------------------------------------------------- Other
 
-    ItemfarmToggle:OnChanged(function(Value)
-        ItemfarmActive = Value 
+Tabs.Other:AddButton({
+    Title = "Infinite Yield",
+    Description = "Loads the Infinite Yield script.",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end
+})
 
-        if Value then
-            SearchForItems()
+Tabs.Other:AddButton({
+    Title = "Open Developer Console",
+    Description = "If you encounter an error while using this script, check for errors in the dev console.",
+    Callback = function()
+        game:GetService("StarterGui"):SetCore("DevConsoleVisible", true)
+    end
+})
 
-            if not ItemfarmConnection then
-                ItemfarmConnection = ItemPickup.ChildAdded:Connect(SearchForItems)
-            end
-        else
-            if ItemfarmConnection then
-                ItemfarmConnection:Disconnect()
-                ItemfarmConnection = nil
-            end
-        end
-
-        Fluent:Notify({
-            Title = "Itemfarm",
-            Content = Value and "Enabled Itemfarm" or "Disabled Itemfarm",
-            Duration = 5
+Tabs.Other:AddButton({
+    Title = "Teleport to 'Ohio New'",
+    Description = "Teleports you to an older Ohio subplace with faster regenerations.",
+    Callback = function()
+        Window:Dialog({
+            Title = "Warning",
+            Content = "This subplace is an older version of the game - If any items in your inventory did not exist back then, they can be overlapped and removed PERMANENTLY.",
+            Buttons = {
+                {
+                    Title = "Confirm",
+                    game:GetService("TeleportService"):Teleport(14767933027, Player)
+                },
+                {
+                    Title = "Cancel",
+                }
+            }
         })
-    end)
+    end
+})
 end
-end
+
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Finished Loading",
+    Content = "The script has finished loading.",
+    Duration = 5
+})
