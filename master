@@ -25,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v2.2]",
+    SubTitle = "by veddetsiwt [v2.3]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -82,17 +82,28 @@ do
         Default = 16,
         Min = 0,
         Max = 100,
-        Rounding = 16,
+        Rounding = 2,
         Callback = function(Value)
             Humanoid.WalkSpeed = Value
+            task.spawn(function()
+                while Value ~= 16 and task.wait() then
+                    Humanoid.WalkSpeed = Value
+                end
+            end)
         end
     })
 
-    local TogglePlrHighlight = Tabs.Powers:AddToggle("TogglePlrHighlight", {Title = "Highlight Players", Default = false })
-
-    TogglePlrHighlight:OnChanged(function()
-        print("Toggle changed:", Options.TogglePlrHighlight.Value)
-    end)
+    local GravitySlider = Tabs.Powers:AddSlider("GravitySlider", {
+        Title = "Gravity",
+        Description = "Change the game's gravity.",
+        Default = 196,
+        Min = 0,
+        Max = 196,
+        Rounding = 2,
+        Callback = function(Value)
+            game.Workspace.Gravity = Value
+        end
+    })
 
     -----[[ Buy ]]-----
 
@@ -185,20 +196,27 @@ if ItemPickup then
     
         for _, item in ipairs(ItemPickup:GetDescendants()) do
             if item:IsA("ProximityPrompt") then
+                print(item.Name)
+
+
                 local model = item:FindFirstAncestorOfClass("Model")
                 local itemType = model and model:GetAttribute("itemName")
+
+                print(item.itemType)
     
                 if model and itemType and ToggledItems[itemType] then
                     print("Farming item: " .. itemType)
     
-                    local modelCFrame = model.PrimaryPart and model.PrimaryPart.CFrame
+                    local modelCFrame = model:GetPivot()
                     if modelCFrame then
-                        RootPart.CFrame = modelCFrame
+                        Character:PivotTo(modelCFrame)
                         fireproximityprompt(item)
                     else
-                        print("Warning: Model missing PrimaryPart, can't move to item.")
+                        print("Warning: Model missing Pivot, can't move to item.")
                     end
                 end
+
+                task.wait(0.25)
             end
         end
     end    
