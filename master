@@ -25,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v2.3]",
+    SubTitle = "by veddetsiwt [v2.3.1]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -86,7 +86,7 @@ do
         Callback = function(Value)
             Humanoid.WalkSpeed = Value
             task.spawn(function()
-                while Value ~= 16 and task.wait() then
+                while Value ~= 16 and task.wait() do
                     Humanoid.WalkSpeed = Value
                 end
             end)
