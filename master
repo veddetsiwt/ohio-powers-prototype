@@ -25,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v2.3.1]",
+    SubTitle = "by veddetsiwt [v2.3.2]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -199,7 +199,7 @@ if ItemPickup then
                 print(item.Name)
 
 
-                local model = item:FindFirstAncestorOfClass("Model")
+                local model = item.Parent:IsA("BasePart") and item.Parent.Parent:IsA("Model") and item.Parent.Parent or nil
                 local itemType = model and model:GetAttribute("itemName")
 
                 print(item.itemType)
