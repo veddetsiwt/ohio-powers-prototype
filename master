@@ -25,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v9]",
+    SubTitle = "by veddetsiwt [v2.2]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -90,7 +90,7 @@ do
 
     local TogglePlrHighlight = Tabs.Powers:AddToggle("TogglePlrHighlight", {Title = "Highlight Players", Default = false })
 
-    Toggle:OnChanged(function()
+    TogglePlrHighlight:OnChanged(function()
         print("Toggle changed:", Options.TogglePlrHighlight.Value)
     end)
 
@@ -247,7 +247,7 @@ if ItemPickup then
     end)
 end
 
------------------------------------------------------------------------------------------ Other
+-----[[ Other ]]-----
 
 Tabs.Other:AddButton({
     Title = "Infinite Yield",
