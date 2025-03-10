@@ -25,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v2.3.4]",
+    SubTitle = "by veddetsiwt [v2.3.5]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -199,7 +199,7 @@ if ItemPickup then
                 local model = item:FindFirstAncestorOfClass("Model")
                 local itemType = model and model:GetAttribute("itemName")
     
-                if itemType and ToggledItems[itemType] then
+                if itemType and table.find(ToggledItems, itemType) then
                     print("Farming item: " .. itemType)
 
                     model:PivotTo(RootPart.CFrame)
@@ -221,12 +221,11 @@ if ItemPickup then
         Default = {"Money Printer"},
     })
     
-    ItemfarmDropdown:OnChanged(function(SelectedItems)
-        ToggledItems = {}
-        for _, item in ipairs(SelectedItems) do
-            print("Added: ".. item)
-            ToggledItems[item] = true
+    ItemfarmDropdown:OnChanged(function(SelectedValues)
+        for SelectedValues, State in next, SelectedValues do
+            table.insert(ToggledItems, SelectedValues)
         end
+        print("ItemfarmList changed:", table.concat(ToggledItems, ", "))
     end)
     
     ItemfarmToggle:OnChanged(function(Value)
