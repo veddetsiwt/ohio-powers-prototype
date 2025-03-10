@@ -25,7 +25,7 @@ end
 
 local Window = Fluent:CreateWindow({
     Title = "Ohio Powers",
-    SubTitle = "by veddetsiwt [v2.3.3]",
+    SubTitle = "by veddetsiwt [v2.3.4]",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -196,23 +196,14 @@ if ItemPickup then
     
         for _, item in ipairs(ItemPickup:GetDescendants()) do
             if item:IsA("ProximityPrompt") then
-                print(item.Name)
-
                 local model = item:FindFirstAncestorOfClass("Model")
                 local itemType = model and model:GetAttribute("itemName")
-
-                print(itemType)
     
-                if model and itemType and ToggledItems[itemType] then
+                if itemType and ToggledItems[itemType] then
                     print("Farming item: " .. itemType)
-    
-                    local modelCFrame = model:GetPivot()
-                    if modelCFrame then
-                        Character:PivotTo(modelCFrame)
-                        fireproximityprompt(item)
-                    else
-                        print("Warning: Model missing Pivot, can't move to item.")
-                    end
+
+                    model:PivotTo(RootPart.CFrame)
+                    fireproximityprompt(item)
                 end
 
                 task.wait(0.25)
@@ -233,6 +224,7 @@ if ItemPickup then
     ItemfarmDropdown:OnChanged(function(SelectedItems)
         ToggledItems = {}
         for _, item in ipairs(SelectedItems) do
+            print("Added: ".. item)
             ToggledItems[item] = true
         end
     end)
